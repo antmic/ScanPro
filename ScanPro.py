@@ -12,8 +12,8 @@ def open():
     grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     return grayimg
 
-def resize(image):
-    img = cv.resize(image, (int(image.shape[1]/4), int(image.shape[0]/4)))
+def resize(image, divisor=4):
+    img = cv.resize(image, (int(image.shape[1]/divisor), int(image.shape[0]/divisor)))
     return img
 
 def binarize(image):
@@ -56,16 +56,16 @@ def binarize(image):
 
     return img_o
 
-def show(image, name, resized=True):
+def show(image, name, resized=True, divisor=4):
     if resized == True:
-        img = resize(image)
+        img = resize(image, divisor)
     cv.imshow(name, img)
     cv.waitKey(0)
     cv.destroyAllWindows()
     
-def save(image, path_to_image=path):
+def save(image, path_to_image=path, name_addition="_filtered.jpg"):
     img_name = os.path.splitext(item.name)[0]
-    cv.imwrite(path_to_image + img_name + "_filtered.jpg", image)
+    cv.imwrite(path_to_image + img_name + name_addition, image)
 
 # ACTIONS
 
