@@ -1,44 +1,48 @@
 import os
-import cv2
+import cv2 as cv
 import numpy as np
+#import timing
+
+path = "/home/antoni/Dokumenty/PythonProjects/ScanPro/test/" #input("Enter path to folder: ")
 
 # DEFINITIONS
 
 def open():
-    img = cv2.imread(path + item.name, flags=1)
-    grayimg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = cv.imread(path + item.name, flags=1)
+    grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     return grayimg
+
+def resize(image):
+    img = cv.resize(image, (int(image.shape[1]/4), int(image.shape[0]/4)))
+    return img
 
 def binarize(image):
 
-    #def resize(image):
-    #    img = cv2.resize(image, (int(image.shape[1]/4), int(image.shape[0]/4)))
-    #    return img
-
     def bil_filter(image):  
-        img = cv2.bilateralFilter(image, 5, 12, 12)
+        img = cv.bilateralFilter(image, 5, 12, 12)
         return img
 
     def divide(image1, image2):
         img = image1/image2
-        img = cv2.normalize(img,None,0,255,cv2.NORM_MINMAX,cv2.CV_8U)
+        img = cv.normalize(img,None,0,255,cv.NORM_MINMAX,cv.CV_8U)
         return img
 
     def closing(image):
-        kernel = np.ones((7,7),np.uint8)
-        closing = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel, iterations=2)
+        if image.shape[0] < 4000:
+            kernel = np.ones((5,5),np.uint8)
+        else:
+            kernel = np.ones((7,7),np.uint8)
+        closing = cv.morphologyEx(image, cv.MORPH_CLOSE, kernel, iterations=2)
         return closing
 
-    def adapt_gauss(image):
-        img = cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,9,6)
-        return img
+    #def adapt_gauss(image):
+    #    img = cv.adaptiveThreshold(image,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY,9,6)
+    #    return img
 
     def otsu(image):
-        ret, img = cv2.threshold(image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        ret, img = cv.threshold(image,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
         return img
     
-    #img_resized = resize(image)
-    #show(img_resized, "resized")
     img_filtered = bil_filter(image)
     #show(img_filtered, "filtered")
     img_closed = closing(image)
@@ -52,14 +56,19 @@ def binarize(image):
 
     return img_o
 
-def show(image, name):
-    cv2.imshow(name, image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+def show(image, name, resized=True):
+    if resized == True:
+        img = resize(image)
+    cv.imshow(name, img)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    
+def save(image, path_to_image=path):
+    img_name = os.path.splitext(item.name)[0]
+    cv.imwrite(path_to_image + img_name + "_filtered.jpg", image)
 
 # ACTIONS
 
-path = "/home/antoni/Dokumenty/PythonProjects/ScanPro/test/" #input("Enter path to folder: ")
 with os.scandir(path) as folder:
     for item in folder:
         if item.name.lower().endswith('.jpg'):
@@ -68,9 +77,8 @@ with os.scandir(path) as folder:
             
             img_bin = binarize(img)
             
-            img_name = os.path.splitext(item.name)[0]
-            cv2.imwrite(path + img_name + "_filtered.jpg", img_bin)
+            show(img_bin, "test")
             
         else:
-            print(item.name," unrecognized")
+            print(item.name," file unrecognized")
             continue
